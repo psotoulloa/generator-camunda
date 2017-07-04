@@ -13,5 +13,3 @@ yo camunda
 <a href="http://www.nekst.me/" target="_blank" title="psotoulloa">
   <img src="https://github.com/psotoulloa.png?size=64" width="64" height="64" alt="psotoulloa">
 </a>
-# generator-camunda
-# generator-camunda
