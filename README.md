@@ -1,4 +1,4 @@
-# Camunda started kit
+# Camunda generator
 This generator allows to create a new camunda project, the generator use a bpmn file to create the necessary classes for the project works properly 
 
 ## Ussage
