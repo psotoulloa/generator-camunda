@@ -1,0 +1,88 @@
+<form name="reunionComite" class='form-horizontal'>
+  <script cam-script type="text/form-script">
+    camForm.on('form-loaded', function()
+    {<% for(var i=0; i<inputs.length ; i++){
+          if(inputs[i].type == "list"  || inputs[i].type == "users"){%>
+      camForm.variableManager.fetchVariable('<%=inputs[i].list%>');<%}}%>
+    });
+    camForm.on('variables-restored', function()
+    {<% for(var i=0; i<inputs.length ; i++){
+           if(inputs[i].type == "list" || inputs[i].type == "users"){%>
+      $scope.<%=inputs[i].list%> = camForm.variableManager.variableValue('<%=inputs[i].list%>');<%}}%>
+    });
+    <%
+    var j = 0;
+    for(var i=0; i<inputs.length ; i++){
+         if(inputs[i].type == "date"){
+           j++;
+          %>
+    var dateFieldOpened<%=j%> = false;
+    $scope.open<%=j%> = function($event) {
+			$event.preventDefault();
+			$event.stopPropagation();
+			$scope.dateFieldOpened<%=j%> = true;
+		};<%}
+    }%>
+  </script>
+  <% for(var i=0,j=0; i< inputs.length ; i++){ %>
+    <div class="form-group">
+      <label class='col-lg-4 col-md-6 control-label'><%=inputs[i].label%></label>
+      <div class='col-lg-8 col-md-6'><% if(inputs[i].type == "boolean"){%>
+        <input class="form-control"
+          type="checkbox"
+          cam-variable-name="<%=inputs[i].name%>" <% if (inputs[i].required ){%>
+          ng-required='true' <% } %>
+          cam-variable-type="Boolean" />
+        <%}
+        else if(inputs[i].type == "textarea"){%>
+        <textarea class="form-control"
+          cam-variable-name="<%=inputs[i].name%>"
+          cam-variable-type="String" <% if (inputs[i].required ){%>
+          ng-required='true' <% } %>
+          ></textarea>
+        <%}
+        else if(inputs[i].type == "text"){%>
+        <input class="form-control"
+          type="text"
+          cam-variable-name="<%=inputs[i].name%>"
+          cam-variable-type="String" <% if (inputs[i].required ){%>
+          ng-required='true' <% } %>
+          />
+        <%}
+        else if(inputs[i].type == "date"){
+          j++;
+          %>
+        <input class="form-control"
+          type="text"
+          cam-variable-name="<%=inputs[i].name%>"
+          cam-variable-type="Date"
+          datepicker-popup="yyyy-MM-dd'T'HH:mm:ss" <% if (inputs[i].required ){%>
+          ng-required='true' <% } %>
+          is-open="dateFieldOpened<%=j%>" />
+        <span class="input-group-btn">
+          <button type="button"
+          class="btn btn-default"
+          ng-click="open<%=j%>($event)">
+          <i class="glyphicon glyphicon-calendar"></i>
+          </button>
+        </span>
+        <%}
+        else if(inputs[i].type == "list"){%>
+        <select class="form-control" ng-required='PRODUCTO_NUEVO==false'
+            cam-variable-name="<%=inputs[i].name%>" <% if (inputs[i].required ){%>
+            ng-required='true' <% } %>
+            cam-variable-type="String" >
+          <option ng-repeat="(key,val) in <%=inputs[i].list%>" value="{{key}}">{{val}}</option>
+        </select>
+        <%}
+        else if(inputs[i].type == "users"){%>
+        <select class="form-control" <% if (inputs[i].required ){%>
+          ng-required='true' <% } %>
+            cam-variable-name="<%=inputs[i].name%>"
+            cam-variable-type="String" >
+          <option ng-repeat="(key,val) in <%=inputs[i].list%>" value="{{key}}">{{val}}</option>
+        </select>
+        <%}%></div>
+    </div>
+  <%}%>
+</form>
