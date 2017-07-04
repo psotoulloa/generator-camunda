@@ -8,10 +8,11 @@ git clone https://github.com/psotoulloa/generator-camunda.git
 cd generator-camunda 
 npm link 
 
-cd <your-awesome-process> 
+cd <your-awesome-process-folder> 
 yo camunda
 
 ``` 
+Then Yeoman will ask you for your bpmn file. 
 
 
 ### Autor
