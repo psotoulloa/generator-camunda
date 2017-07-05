@@ -3,24 +3,10 @@ var Promise = require('promise');
 var yosay = require('yosay');
 var _ = require('lodash');
 
-function __nameValidator(generator,node,tag_name){
-  var error = false;
-  var tags = node.getElementsByTagName(tag_name);
-  for (var j = 0; j < tags.length; j++) {
-    var tag = tags[j];
-    var name = tag.getAttribute('name');
-    var id = tag.getAttribute('id');
-    if(name == ''){
-      generator.log(chalk.red("User task '"+id+"' whit no name "));
-      error = true;
-    }
-  }
-  return error;
-}
-  /**
-   * Return the path to file
-   * @param {string} classDefinition
-   */
+/**
+ * Return the path to file
+ * @param {string} classDefinition
+ */
 function _get_class_file (classDefinition){
     return 'src/main/java/' + _.replace(classDefinition, /\./g, '/') + ".java";
 }
