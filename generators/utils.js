@@ -322,7 +322,7 @@ function _createForms(self){
     });
   }
 }
-//Validate that all tags in a node have a name
+
 module.exports = {
   "nameValidator" : __nameValidator,
   "get_class_file" : _get_class_file,
