@@ -324,7 +324,6 @@ function _createForms(self){
 }
 
 module.exports = {
-  "nameValidator" : __nameValidator,
   "get_class_file" : _get_class_file,
   "add_java_delegates" : _add_java_delegates,
   "get_class_name" : _get_class_name,

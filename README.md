@@ -33,9 +33,12 @@ yo camunda:javadelegate Task_7a43dtk
 ``` 
 
 ## TODO LIST 
+- File input
+- API Calls 
 - User guide
 - Refactor the code 
 - Make tests
+- End events
 
 ### Autor
 
