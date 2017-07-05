@@ -15,7 +15,7 @@ yo camunda
 ``` 
 Then Yeoman will ask you for your bpmn file, then it will move to the "camunda process folder" (src/main/resources/)
 
-### Sub-Generators
+### Sub-Generators
 #### Forms
 ```bash
 # yo camunda:form <task_id/start_event_id>
