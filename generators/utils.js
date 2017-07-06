@@ -83,27 +83,27 @@ function _add_form(self,node){
       for (var k=0;k<properties.length;k++){
         var name = properties[k].getAttribute("name");
         var value = properties[k].getAttribute("value");
-        //Input text
-        if( name.startsWith("text")){
-          var required = false;
-          if(name.endsWith("*")){
-            required = true;
-          }
-          inputs.push({
-            type :"text",
-            label: _.upperFirst(value),
-            name : value,
-            required: required
-          });
-        }
         //Input textarea
-        else if( name.startsWith("textarea")){
+        if( name.startsWith("textarea")){
           var required = false;
           if(name.endsWith("*")){
             required = true;
           }
           inputs.push({
             type :"textarea",
+            label: _.upperFirst(value),
+            name : value,
+            required: required
+          });
+        }
+        //Input text
+        else if( name.startsWith("text")){
+          var required = false;
+          if(name.endsWith("*")){
+            required = true;
+          }
+          inputs.push({
+            type :"text",
             label: _.upperFirst(value),
             name : value,
             required: required
