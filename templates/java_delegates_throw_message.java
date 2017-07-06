@@ -26,6 +26,12 @@ public class <%= delegate_class_name%> implements JavaDelegate {
     <% } %>
     processVariables.put("<%= process_id_name %>", execution.getProcessInstanceId());
 
+    Map<String, Object> localVariables = execution.getVariables();
+		for(Map.Entry<String,Object> entry : localVariables.entrySet()){
+			if(entry.getKey().startsWith("INSTANCE_ID_")){
+				processVariables.put(entry.getKey(), entry.getValue());
+			}
+		}
 
 		runtimeService.createMessageCorrelation("<%=message_destination_name%>")<% if (!is_start_event){%>
 			.processInstanceId(execution.getVariable("<%=id_instancia_a_ejecutar%>").toString())<%}%>

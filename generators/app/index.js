@@ -32,7 +32,7 @@ module.exports = class extends Generator {
     this.onlyNewsForms = false;
     this.forms = [];
     if(args.length>0){
-      this.config.set('applicationName',args[0]);
+      this.config.set('bpmFile',args[0]);
     }
     this.sourceRoot(path.join(__dirname,'..','..','templates'));
   }
@@ -285,22 +285,50 @@ module.exports = class extends Generator {
             }
           }
 
+          //Iterate over end events
+          var endEvents = processes[i].getElementsByTagName('bpmn:endEvent');
+          for (var j = 0; j < endEvents.length; j++) {
+            var endEvent = endEvents[j];
+            var messageEventDefinitions = endEvent.getElementsByTagName("bpmn:messageEventDefinition");
+            if(messageEventDefinitions.length>0){
+              var camunda_class = endEvent.getAttribute('camunda:class');
+              var name = endEvent.getAttribute('name');
+              var id = endEvent.getAttribute('id');
+              if(name == ''){
+                self.log(chalk.red("Error : end Event '"+id+"' whit no name "));
+                error = true;
+              }
+              if(camunda_class == ''){
+                nodeOption = {
+                  name: self.config.get("processPackage")+ ".endevent." + _.upperFirst(_.camelCase(name)),
+                  value : self.config.get("processPackage")+ ".endevent." + _.upperFirst(_.camelCase(name)),
+                  checked: true
+                };
+              }else{
+                nodeOption = {
+                  name: camunda_class,
+                  value : camunda_class,
+                  checked: true
+                };
+              }
+              if(utils.add_java_delegates(self,nodeOption,true) ){
+                self.classNodes[nodeOption.name] = endEvent;
+              }
+            }
+          }
+
           var exclusiveGatewayOutgoins = [];
           var exclusiveGateways = processes[i].getElementsByTagName('bpmn:exclusiveGateway');
           for (var j = 0; j < exclusiveGateways.length; j++) {
             var exclusiveGateway = exclusiveGateways[j];
-            var name = exclusiveGateway.getAttribute('name');
             var id = exclusiveGateway.getAttribute('id');
-            if(name == ''){
-              self.log(chalk.red("Error : Exclusive Gateway '"+id+"' whit no name "));
-              error = true;
-            }
             var outgoins = exclusiveGateway.getElementsByTagName("bpmn:outgoing");
-            for (var k = 0; k <outgoins.length ; k++){
-              var outgoin = outgoins[k];
-              if(outgoin.textContent != exclusiveGateway.getAttribute("default")){
-
-                exclusiveGatewayOutgoins.push(outgoin.textContent);
+            if(outgoins.length>1){
+              for (var k = 0; k <outgoins.length ; k++){
+                var outgoin = outgoins[k];
+                if(outgoin.textContent != exclusiveGateway.getAttribute("default")){
+                  exclusiveGatewayOutgoins.push(outgoin.textContent);
+                }
               }
             }
           }
@@ -309,7 +337,7 @@ module.exports = class extends Generator {
             if( exclusiveGatewayOutgoins.indexOf(sequenceFlows[j].getAttribute("id")) > -1){
               var conditionExpressions = sequenceFlows[j].getElementsByTagName("bpmn:conditionExpression");
               if(conditionExpressions.length == 0){
-                self.log(chalk.red("Error : Sequence Flow '"+id+"' whit no condition expresion (scripts no supported yet) "));
+                self.log(chalk.red("Error : Sequence Flow '"+sequenceFlows[j].getAttribute("id")+"' whit no condition expresion (scripts no supported yet) "));
                 error = true;
               }
             }
@@ -369,7 +397,7 @@ module.exports = class extends Generator {
         if ('javaDelegatesThatEmitesMessages' in answers)
         for (var i = 0; i< answers['javaDelegatesThatEmitesMessages'].length;i++){
           var node = this.classNodes[answers['javaDelegatesThatEmitesMessages'][i]];
-          if (node.tagName == 'bpmn:intermediateThrowEvent'){
+          if (node.tagName == 'bpmn:intermediateThrowEvent' || node.tagName == 'bpmn:endEvent'){
             var messageEventDefinitions = node.getElementsByTagName("bpmn:messageEventDefinition");
             messageEventDefinitions[0].setAttribute("camunda:class",answers['javaDelegatesThatEmitesMessages'][i]);
           }else{
@@ -383,7 +411,12 @@ module.exports = class extends Generator {
           var is_start_event = false;
           var variables = [];
           var id_instancia_a_ejecutar = "";
-
+          var process_id_name = "";
+          if(node.parentNode.tagName == "bpmn:laneSet"){
+            process_id_name = "INSTANCE_ID_" + node.parentNode.parentNode.getAttribute("id");
+          }else{
+            process_id_name = "INSTANCE_ID_" + node.parentNode.getAttribute("id");
+          }
           //Search and verify target references
           for (var j= 0; j<messageFlows.length ; j++){
             if(messageFlows[j].getAttribute('sourceRef') == node_id){
@@ -399,7 +432,12 @@ module.exports = class extends Generator {
                 self.log(yosay( chalk.yellow('Sorry, resolve this issue and try again ') ));
                 return;
               }
-              id_instancia_a_ejecutar = "INSTANCE_ID_" + target.parentNode.getAttribute("name");
+              if (target.parentNode.tagName == "bpmn:laneSet"){
+                id_instancia_a_ejecutar = "INSTANCE_ID_" + target.parentNode.parentNode.getAttribute("id");
+              }else{
+                id_instancia_a_ejecutar = "INSTANCE_ID_" + target.parentNode.getAttribute("id");
+              }
+
             }
           }
           // Processes archives
@@ -424,7 +462,7 @@ module.exports = class extends Generator {
               message_destination_name : message_destination_name,
               id_instancia_a_ejecutar : id_instancia_a_ejecutar,
               is_start_event : is_start_event,
-              process_id_name : id_instancia_a_ejecutar
+              process_id_name : process_id_name
             }
           );
         }
@@ -474,6 +512,7 @@ module.exports = class extends Generator {
             return;
           }
           var doc = new DOMParser().parseFromString(data);
+
           var processApplication = doc.getElementsByTagName("process-application");
           var processArchives = doc.getElementsByTagName("process-archive");
           var found = false;
@@ -536,6 +575,15 @@ module.exports = class extends Generator {
         }
       );
 
+      self.fs.copyTpl(
+        self.templatePath('package.json'),
+        self.destinationPath('package.json'),
+        {
+          localPath: self.destinationPath(),
+          groupId : self.config.get('groupId'),
+          applicationName: self.config.get('applicationName')
+        }
+      );
     };
 
     self.appStaticFiles();

@@ -258,6 +258,8 @@ module.exports = class extends Generator {
         content: xml_bpmn
       }
     );
+
+
   }
 
   conflicts() {

@@ -1,0 +1,19 @@
+{
+  "name": "<%=groupId%>",
+  "version": "1.0.0",
+  "description": "<%=applicationName%>",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prebuild" : "mvn clean",
+    "build": "mvn package && mvn install",
+    "predeploy" : "npm run build",
+    "deploy" : "cp <%=localPath%>/target/development-0.0.1-SNAPSHOT.war /Users/psoto/Development/camunda-bpm-tomcat-7.5.0/server/apache-tomcat-8.0.24/webapps"
+
+  },
+  "keywords": [
+    "camunda"
+  ],
+  "author": "psoto",
+  "license": "ISC"
+}
