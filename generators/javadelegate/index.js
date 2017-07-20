@@ -28,7 +28,7 @@ module.exports = class extends Generator {
   constructor(args, opts) {
     super(args, opts);
     this.javaDelegates = [];
-    this.javaDelegatesThatEmitesMessages = [];
+    this.javaDelegatesThatEmitsMessages = [];
     this.classNodes = {};
     this.doc = null;
     this.elementid = args[0];
@@ -63,6 +63,7 @@ module.exports = class extends Generator {
         self.log(chalk.red("Element doesn't exist"));
         return ;
       }
+      self.log(yosay( chalk.yellow(element.tagName) ));
       // IntermediateThrowEvent
       if(element.tagName == 'bpmn:intermediateThrowEvent'){
         var intermediateThrowEvent = element;
@@ -153,6 +154,36 @@ module.exports = class extends Generator {
           self.classNodes[nodeOption.name] = sendTask;
         }
       }
+      if(element.tagName == 'bpmn:endEvent'){
+        var endEvent = element;
+        var messageEventDefinitions = endEvent.getElementsByTagName("bpmn:messageEventDefinition");
+        if(messageEventDefinitions.length>0){
+          var camunda_class = endEvent.getAttribute('camunda:class');
+          var name = endEvent.getAttribute('name');
+          var id = endEvent.getAttribute('id');
+          if(name == ''){
+            self.log(chalk.red("Error : end Event '"+id+"' whit no name "));
+            error = true;
+          }
+          if(camunda_class == ''){
+            nodeOption = {
+              name: self.config.get("processPackage")+ ".endevent." + _.upperFirst(_.camelCase(name)),
+              value : self.config.get("processPackage")+ ".endevent." + _.upperFirst(_.camelCase(name)),
+              checked: true
+            };
+          }else{
+            nodeOption = {
+              name: camunda_class,
+              value : camunda_class,
+              checked: true
+            };
+          }
+          if(utils.add_java_delegates(self,nodeOption,true) ){
+            self.classNodes[nodeOption.name] = endEvent;
+          }
+        }
+      }
+
 
       if(!error){
         done();
@@ -167,82 +198,7 @@ module.exports = class extends Generator {
    */
   createClases(){
     var self = this;
-    //Simple Java Delegates
-    for (var i = 0; i < this.javaDelegates.length;i++){
-      this.classNodes[this.javaDelegates[i]].setAttribute("camunda:class",answers['javaDelegates'][i]);
-      this.fs.copyTpl(
-        this.templatePath('java_delegates.java'),
-        this.destinationPath(utils.get_class_file(answers['javaDelegates'][i])),
-        {
-          delegate_package : utils.get_class_package(answers['javaDelegates'][i]) ,
-          delegate_class_name : self._get_class_name(answers['javaDelegates'][i]) ,
-        }
-      );
-    }
-    // Java Delegates That Emites Messages
-    for (var i = 0; i< this.javaDelegatesThatEmitesMessages.length;i++){
-      var class_name = this.javaDelegatesThatEmitesMessages[i];
-      var node = this.classNodes[class_name];
-      if (node.tagName == 'bpmn:intermediateThrowEvent'){
-        var messageEventDefinitions = node.getElementsByTagName("bpmn:messageEventDefinition");
-        messageEventDefinitions[0].setAttribute("camunda:class",class_name);
-      }else{
-        node.setAttribute("camunda:class",class_name);
-      }
-      var node = this.classNodes[class_name];
-      var node_id = node.getAttribute("id");
-      var collaboration = self.doc.getElementsByTagName('bpmn:collaboration');
-      var messageFlows = collaboration[0].getElementsByTagName("bpmn:messageFlow");
-      var message_destination_name = "";
-      var is_start_event = false;
-      var variables = [];
-      var id_instancia_a_ejecutar = "";
-
-      //Search and verify target references
-      for (var j= 0; j<messageFlows.length ; j++){
-        if(messageFlows[j].getAttribute('sourceRef') == node_id){
-          var target = self.doc.getElementById(messageFlows[j].getAttribute("targetRef"));
-          if (target.tagName == 'bpmn:startEvent'){
-            is_start_event = true;
-          }
-          var messagesEventDefinitions =target.getElementsByTagName("bpmn:messageEventDefinition");
-          if (messagesEventDefinitions != undefined && messagesEventDefinitions[0].getAttribute("messageRef") != ""){
-            message_destination_name = self.doc.getElementById(messagesEventDefinitions[0].getAttribute("messageRef")).getAttribute("name");
-          }else{
-            this.log(chalk.red("Error : the event/activity "+target.getAttribute("name")+" doesn't have a message definition"));
-            self.log(yosay( chalk.yellow('Sorry, resolve this issue and try again ') ));
-            return;
-          }
-          id_instancia_a_ejecutar = "INSTANCE_ID_" + target.parentNode.getAttribute("name");
-        }
-      }
-      // Processes archives
-      var properties = node.getElementsByTagName("camunda:property");
-      for (var j = 0;j<properties.length; j++){
-        variables.push(properties[j].getAttribute("value"));
-      }
-      //If no destination message, throw error
-      if(message_destination_name == ""){
-        this.log(chalk.red("Error : you must point your message "+ node.getAttribute("name")+" to some event message"));
-        self.log(yosay( chalk.yellow('Sorry, resolve this issue and try again ') ));
-        return;
-      }
-      //Otherwise we copy the processes.xml
-      this.fs.copyTpl(
-        this.templatePath('java_delegates_throw_message.java'),
-        this.destinationPath(utils.get_class_file(class_name)),
-        {
-          delegate_package : utils.get_class_package(class_name) ,
-          delegate_class_name : utils.get_class_name(class_name) ,
-          variables : variables,
-          message_destination_name : message_destination_name,
-          id_instancia_a_ejecutar : id_instancia_a_ejecutar,
-          is_start_event : is_start_event,
-          process_id_name : id_instancia_a_ejecutar
-        }
-      );
-    }
-
+    utils.create_clases(self,this.javaDelegates,this.javaDelegatesThatEmitsMessages);
   }
 
   /**

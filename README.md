@@ -38,7 +38,8 @@ yo camunda:javadelegate Task_7a43dtk
 - API Calls 
 - Refactor the code 
 - Make tests
-
+- IMplements inputs number
+- Bug javadelegate
 ### Autor
 
 <a href="http://www.nekst.me/" target="_blank" title="psotoulloa">

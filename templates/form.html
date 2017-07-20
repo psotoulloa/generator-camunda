@@ -23,6 +23,37 @@
 			$scope.dateFieldOpened<%=j%> = true;
 		};<%}
     }%>
+
+    <%
+    for(var i=0; i<inputs.length ; i++){
+         if(inputs[i].type == "file" && inputs[i].required){
+           j++;
+          %>
+    var fileUpload<%=inputs[i].name%> = $('#file<%=inputs[i].name%>');
+		var fileUploadHelpBlock<%=inputs[i].name%> = $('#help-block<%=inputs[i].name%>', fileUpload<%=inputs[i].name%>.parent());
+		function flagFileUpload<%=inputs[i].name%>() {
+			var hasFile = fileUpload<%=inputs[i].name%>.get(0).files.length > 0;
+			fileUpload<%=inputs[i].name%>[hasFile ? 'removeClass' : 'addClass']('ng-invalid');
+			fileUploadHelpBlock<%=inputs[i].name%>[hasFile ? 'removeClass' : 'addClass']('error');
+			return hasFile;
+		}
+		fileUpload<%=inputs[i].name%>.on('change', function () {
+			flagFileUpload<%=inputs[i].name%>();
+		});
+		<%}
+    }%>
+    camForm.on('submit', function(evt) {<%
+    for(var i=0; i<inputs.length ; i++){
+         if(inputs[i].type == "file" && inputs[i].required){
+           j++;
+          %>
+			if(!flagFileUpload<%=inputs[i].name%>()){
+			  // prevent submit if user has not provided a file
+        evt.submitPrevented = true;
+        return;
+      }
+		<%}
+    }%>});
   </script>
   <% for(var i=0,j=0; i< inputs.length ; i++){ %>
     <div class="form-group">
@@ -66,6 +97,25 @@
           <i class="glyphicon glyphicon-calendar"></i>
           </button>
         </span>
+        <%}
+        else if(inputs[i].type == "number"){
+          j++;
+          %>
+        <input class="form-control"
+          type="number"
+          cam-variable-name="<%=inputs[i].name%>"
+          cam-variable-type="Integer" <% if (inputs[i].required ){%>
+          ng-required='true' <% } %>/>
+        <%}
+        else if(inputs[i].type == "file"){
+          j++;
+          %>
+        <input class="form-control" type="file"
+          id='file<%=inputs[i].name%>'
+          cam-variable-name="<%=inputs[i].name%>"
+          cam-variable-type="File"
+          cam-max-filesize="10000000" />
+        <% if (inputs[i].required ){%><div id="help-block<%=inputs[i].name%>">Doc required</div><%}%>
         <%}
         else if(inputs[i].type == "list"){%>
         <select class="form-control" ng-required='PRODUCTO_NUEVO==false'

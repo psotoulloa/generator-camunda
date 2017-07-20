@@ -20,7 +20,7 @@ function _add_java_delegates(self,classOptions,triggerMessage){
     if(!triggerMessage){
       self.javaDelegates.push(classOptions.name);
     }else{
-      self.javaDelegatesThatEmitesMessages.push(classOptions.name);
+      self.javaDelegatesThatEmitsMessages.push(classOptions.name);
     }
 
     return true;
@@ -29,7 +29,7 @@ function _add_java_delegates(self,classOptions,triggerMessage){
     if(!triggerMessage){
       self.javaDelegates.push(classOptions.name);
     }else{
-      self.javaDelegatesThatEmitesMessages.push(classOptions.name);
+      self.javaDelegatesThatEmitsMessages.push(classOptions.name);
     }
     return true;
   }
@@ -75,6 +75,7 @@ function _get_process_archive(self){
  */
 function _add_form(self,node){
   var inputs = [];
+  var infos = [];
   var extensionElements = node.getElementsByTagName("bpmn:extensionElements");
   if(extensionElements.length>0){
     var camunda_properties = extensionElements[0].getElementsByTagName("camunda:properties");
@@ -83,6 +84,13 @@ function _add_form(self,node){
       for (var k=0;k<properties.length;k++){
         var name = properties[k].getAttribute("name");
         var value = properties[k].getAttribute("value");
+        //Información
+        if( name == "info"){
+          var required = false;
+          infos.push({
+            name : value
+          });
+        }
         //Input textarea
         if( name.startsWith("textarea")){
           var required = false;
@@ -104,6 +112,19 @@ function _add_form(self,node){
           }
           inputs.push({
             type :"text",
+            label: _.upperFirst(value),
+            name : value,
+            required: required
+          });
+        }
+        //Number
+        else if( name.startsWith("number")){
+          var required = false;
+          if(name.endsWith("*")){
+            required = true;
+          }
+          inputs.push({
+            type :"number",
             label: _.upperFirst(value),
             name : value,
             required: required
@@ -322,8 +343,110 @@ function _createForms(self){
     });
   }
 }
+/**
+ * Methot that generate java delegators from an array
+ * @param {Generator} self
+ * @param {Array} delegates
+ */
+function _generate_java_delegates_that_emits_messages(self,delegates){
+  var java_delegates_no_message = [];
+  for (var i = 0; i< delegates.length;i++){
+    var node = self.classNodes[delegates[i]];
+
+    if (node.tagName == 'bpmn:intermediateThrowEvent' || node.tagName == 'bpmn:endEvent'){
+      var messageEventDefinitions = node.getElementsByTagName("bpmn:messageEventDefinition");
+      messageEventDefinitions[0].setAttribute("camunda:class",delegates[i]);
+    }else{
+      node.setAttribute("camunda:class",delegates[i]);
+    }
+    var node_id = node.getAttribute("id");
+    var collaboration = self.doc.getElementsByTagName('bpmn:collaboration');
+    var messageFlows = collaboration[0].getElementsByTagName("bpmn:messageFlow");
+    var message_destination_name = "";
+    var is_start_event = false;
+    var variables = [];
+    var id_instancia_a_ejecutar = "";
+    var process_id_name = "";
+    if(node.parentNode.tagName == "bpmn:laneSet"){
+      process_id_name = "INSTANCE_ID_" + node.parentNode.parentNode.getAttribute("id");
+    }else{
+      process_id_name = "INSTANCE_ID_" + node.parentNode.getAttribute("id");
+    }
+    //Search and verify target references
+    for (var j= 0; j<messageFlows.length ; j++){
+      if(messageFlows[j].getAttribute('sourceRef') == node_id){
+        var target = self.doc.getElementById(messageFlows[j].getAttribute("targetRef"));
+        if (target.tagName == 'bpmn:startEvent'){
+          is_start_event = true;
+        }
+        var messagesEventDefinitions =target.getElementsByTagName("bpmn:messageEventDefinition");
+        if (messagesEventDefinitions != undefined && messagesEventDefinitions[0].getAttribute("messageRef") != ""){
+          message_destination_name = self.doc.getElementById(messagesEventDefinitions[0].getAttribute("messageRef")).getAttribute("name");
+        }else{
+          self.log(chalk.red("Error : the event/activity "+target.getAttribute("name")+" doesn't have a message definition"));
+          self.log(yosay( chalk.yellow('Sorry, resolve this issue and try again ') ));
+          return;
+        }
+        if (target.parentNode.tagName == "bpmn:laneSet"){
+          id_instancia_a_ejecutar = "INSTANCE_ID_" + target.parentNode.parentNode.getAttribute("id");
+        }else{
+          id_instancia_a_ejecutar = "INSTANCE_ID_" + target.parentNode.getAttribute("id");
+        }
+
+      }
+    }
+    // Processes archives
+    var properties = node.getElementsByTagName("camunda:property");
+    for (var j = 0;j<properties.length; j++){
+      variables.push(properties[j].getAttribute("value"));
+    }
+    //If no destination message, throw error
+    if(message_destination_name == ""){
+      //
+      self.log(chalk.yellow("Warnign : throw event "+ node.getAttribute("name")+" whit no message flow"));
+      java_delegates_no_message.push(delegates[i]);
+    }
+    //Otherwise we copy the processes.xml
+    self.fs.copyTpl(
+      self.templatePath('java_delegates_throw_message.java'),
+      self.destinationPath(_get_class_file(delegates[i])),
+      {
+        delegate_package : _get_class_package(delegates[i]) ,
+        delegate_class_name : _get_class_name(delegates[i]) ,
+        variables : variables,
+        message_destination_name : message_destination_name,
+        id_instancia_a_ejecutar : id_instancia_a_ejecutar,
+        is_start_event : is_start_event,
+        process_id_name : process_id_name
+      }
+    );
+  }
+  return java_delegates_no_message;
+}
+
+function _create_clases(self,javaDelegates,javaDelegatesThatEmitsMessages){
+  var delegates_with_no_message_definition = _generate_java_delegates_that_emits_messages(self,javaDelegatesThatEmitsMessages);
+  for (var i=0;i< delegates_with_no_message_definition.length;i++){
+    javaDelegates.push(delegates_with_no_message_definition[i]);
+  }
+  //Simple Java Delegates
+  for (var i = 0; i < javaDelegates.length;i++){
+    self.classNodes[javaDelegates[i]].setAttribute("camunda:class",javaDelegates[i]);
+    self.fs.copyTpl(
+      self.templatePath('java_delegates.java'),
+      self.destinationPath(_get_class_file(javaDelegates[i])),
+      {
+        delegate_package : _get_class_package(javaDelegates[i]) ,
+        delegate_class_name : _get_class_name(javaDelegates[i]) ,
+      }
+    );
+  }
+}
+
 
 module.exports = {
+  "generate_java_delegates_that_emites_messages" : _generate_java_delegates_that_emits_messages,
+  "create_clases" : _create_clases,
   "get_class_file" : _get_class_file,
   "add_java_delegates" : _add_java_delegates,
   "get_class_name" : _get_class_name,
