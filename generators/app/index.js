@@ -477,11 +477,7 @@ module.exports = class extends Generator {
       }
 
       //BPMN FILE
-      var definitions = self.doc.getElementsByTagName("bpmn:definitions");
-      for (var i=0;i<definitions.length;i++){
-        var definition = definitions[i];
-        definition.setAttribute("xmlns:camunda","http://camunda.org/schema/1.0/bpmn");
-      }
+      utils.add_xmlns_camunda(self.doc);
       var xml_bpmn = serializer.serializeToString(self.doc);
       if(!self.fs.exists(self.destinationPath("src/main/resources/"+self.config.get('bpmFile'))) ){
         if(self.fs.exists(self.destinationPath(self.config.get('bpmFile')))){

@@ -10,6 +10,15 @@ var _ = require('lodash');
 function _get_class_file (classDefinition){
     return 'src/main/java/' + _.replace(classDefinition, /\./g, '/') + ".java";
 }
+
+function _add_xmlns_camunda(doc){
+  var definitions = doc.getElementsByTagName("bpmn:definitions");
+  for (var i=0;i<definitions.length;i++){
+    var definition = definitions[i];
+    definition.setAttribute("xmlns:camunda","http://camunda.org/schema/1.0/bpmn");
+  }
+}
+
 /**
  * Add java delegate
  * @param {object} classOptions
@@ -454,4 +463,5 @@ module.exports = {
   "get_process_archive" : _get_process_archive,
   "add_form" : _add_form,
   "createForms" : _createForms,
+  "add_xmlns_camunda" : _add_xmlns_camunda
 }

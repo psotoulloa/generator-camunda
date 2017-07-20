@@ -206,6 +206,7 @@ module.exports = class extends Generator {
    */
   writing(){
     //BPMN FILE
+    utils.add_xmlns_camunda(this.doc);
     var xml_bpmn = serializer.serializeToString(this.doc);
     this.fs.copyTpl(
       this.templatePath('blank_file.txt'),
