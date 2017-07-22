@@ -163,7 +163,6 @@ function _add_form(self,node){
         //Input list
         else if( name.match("^list([\*]?):([a-zA-Z\_0-9]+)\@((\/[\{]?([a-zA-Z0-9]+)[\}?]?)+)") != null){
           //not the optimal way i know :)
-          console.log("asdf");
           var rs = name.match("^list([\*]?):([a-zA-Z\_0-9]+)\@((\/[\{]?([a-zA-Z0-9]+)[\}?]?)+)");
           inputs.push({
             type :"list",
@@ -358,7 +357,7 @@ function _create_forms_script(self,forms){
     }
     var varsToLoad = [];
     for (var k=0;k<form.inputs.length;k++){
-      if(form.inputs[i].type == "list"){
+      if(form.inputs[k].type == "list"){
         varsToLoad.push(form.inputs[k].list);
       }
     }
@@ -419,9 +418,7 @@ function _generate_java_delegates_that_emits_messages(self,delegates){
         if (messagesEventDefinitions != undefined && messagesEventDefinitions[0].getAttribute("messageRef") != ""){
           message_destination_name = self.doc.getElementById(messagesEventDefinitions[0].getAttribute("messageRef")).getAttribute("name");
         }else{
-          self.log(chalk.red("Error : the event/activity "+target.getAttribute("name")+" doesn't have a message definition"));
-          self.log(yosay( chalk.yellow('Sorry, resolve this issue and try again ') ));
-          return;
+          self.log(chalk.yellow("Warning : the event/activity "+target.getAttribute("name")+" doesn't have a message definition"));
         }
         if (target.parentNode.tagName == "bpmn:laneSet"){
           id_instancia_a_ejecutar = "INSTANCE_ID_" + target.parentNode.parentNode.getAttribute("id");

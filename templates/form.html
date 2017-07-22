@@ -43,7 +43,6 @@
     camForm.on('submit', function(evt) {<%
     for(var i=0; i<inputs.length ; i++){
          if(inputs[i].type == "file" && inputs[i].required){
-           j++;
           %>
 			if(!flagFileUpload<%=inputs[i].name%>()){
 			  // prevent submit if user has not provided a file
@@ -51,7 +50,20 @@
         return;
       }
 		<%}
-    }%>});
+    }%>
+      for (var i = 0; i < camForm.fields.length; i++) {
+    <%
+    for(var i=0; i<inputs.length ; i++){
+         if(inputs[i].type == "file" && !inputs[i].required){
+          %>
+        if (camForm.fields[i].variableName == '<%=inputs[i].name%>') {
+          camForm.fields.splice(i, 1);
+          camForm.variableManager.destroyVariable('<%=inputs[i].name%>');
+        }
+		<%}
+    }%>
+      }
+    });
   </script>
   <% for(var i=0; i< infos.length ; i++){
     %><div class="form-group">
@@ -101,7 +113,6 @@
         </span>
         <%}
         else if(inputs[i].type == "number"){
-          j++;
           %>
         <input class="form-control"
           type="number"
@@ -110,7 +121,6 @@
           ng-required='true' <% } %>/>
         <%}
         else if(inputs[i].type == "file"){
-          j++;
           %>
         <input class="form-control" type="file"
           id='file<%=inputs[i].name%>'
