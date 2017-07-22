@@ -354,13 +354,12 @@ function _create_forms_script(self,forms){
             variable_name : input.list
           }
         );
-
       }
     }
     var varsToLoad = [];
     for (var k=0;k<form.inputs.length;k++){
       if(form.inputs[i].type == "list"){
-        varsToLoad.push(form.inputs[k].name);
+        varsToLoad.push(form.inputs[k].list);
       }
     }
     for (var k=0;k<form.infos.length;k++){

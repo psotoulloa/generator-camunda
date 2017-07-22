@@ -120,7 +120,7 @@
         <% if (inputs[i].required ){%><div id="help-block<%=inputs[i].name%>">Doc required</div><%}%>
         <%}
         else if(inputs[i].type == "list"){%>
-        <select class="form-control" ng-required='PRODUCTO_NUEVO==false'
+        <select class="form-control"
             cam-variable-name="<%=inputs[i].name%>" <% if (inputs[i].required ){%>
             ng-required='true' <% } %>
             cam-variable-type="String" >
