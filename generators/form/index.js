@@ -70,59 +70,7 @@ module.exports = class extends Generator {
    * This method create the forms and atach them to the bpmn
    */
   createForms(){
-    var self = this;
-    var formsChoices = [];
-    var formsChoicesHashs = {};
-    var form = self.forms[0];
-    form.node.setAttribute("camunda:formKey",form.formKey);
-    for(var j=0;j<form.inputs.length;j++){
-      var input = form.inputs[j];
-      if(input.type == 'users'){
-        var extensionElements = form.node.getElementsByTagName("bpmn:extensionElements");
-        var extensionElement = null;
-        if(extensionElements.length==0){
-          extensionElement = new DOMParser().parseFromString("<bpmn:extensionElements></bpmn:extensionElements>");
-          form.node.appendChild(extensionElement);
-        }else{
-          extensionElement = extensionElements[0];
-        }
-        var package_user = "org.camunda.groups";
-        var class_name = _.upperFirst(input.list);
-        var group = input.list;
-        var executionListener = self.doc.createElement("camunda:executionListener");
-        executionListener.setAttribute("class",package_user+'.'+class_name);
-        executionListener.setAttribute("event","start");
-
-        var executionListeners = extensionElement.getElementsByTagName("camunda:executionListener");
-        var found = false;
-        for(var k=0;k<executionListeners.length;k++){
-          if(executionListeners[k].getAttribute("class")==(package_user+'.'+class_name)){
-            found = true;
-          }
-        }
-        if(!found){
-          extensionElement.appendChild(executionListener);
-        }
-        self.fs.copyTpl(
-          self.templatePath('users.java'),
-          self.destinationPath("src/main/java/org/camunda/groups/"+class_name+".java"),
-          {
-            package_user: package_user,
-            class_name: class_name,
-            group: group,
-            variable_name : input.list
-          }
-        );
-
-      }
-    }
-    self.fs.copyTpl(
-      self.templatePath('form.html'),
-      self.destinationPath(form.path),
-      {
-        inputs: form.inputs,
-      }
-    );
+    utils.createForms(this,false);
   }
 
   writing(){

@@ -101,7 +101,7 @@ function _add_form(self,node){
           });
         }
         //Input textarea
-        if( name.startsWith("textarea")){
+        else if( name.startsWith("textarea")){
           var required = false;
           if(name.endsWith("*")){
             required = true;
@@ -161,25 +161,18 @@ function _add_form(self,node){
           }
         }
         //Input list
-        else if( name.startsWith("list")){
-          var required = false;
-          if(name.endsWith("*")){
-            required = true;
-          }
-          name = _.replace(name,"*","");
-          var arr = name.split(":");
-          if(arr.length==2){
-            inputs.push({
-              type :"list",
-              label: _.upperFirst(value),
-              list :arr[1],
-              name : value,
-              required: required
-            });
-          }else{
-            self.log(chalk.yellow("Warning : list without a list -> '"+name));
-            continue;
-          }
+        else if( name.match("^list([\*]?):([a-zA-Z\_0-9]+)\@((\/[\{]?([a-zA-Z0-9]+)[\}?]?)+)") != null){
+          //not the optimal way i know :)
+          console.log("asdf");
+          var rs = name.match("^list([\*]?):([a-zA-Z\_0-9]+)\@((\/[\{]?([a-zA-Z0-9]+)[\}?]?)+)");
+          inputs.push({
+            type :"list",
+            label: _.upperFirst(value),
+            list :rs[2],
+            name : value,
+            url : rs[3],
+            required: (rs[1]=='*')?true:false
+          });
         }
         //Input file
         else if( name.startsWith("file")){
@@ -234,7 +227,7 @@ function _add_form(self,node){
           });
         }
         else{
-          self.log(chalk.yellow("Warning : property type unknown '"+name));
+          self.log(chalk.yellow("Warning :  unknown property '"+name+"'"));
           continue;
         }
       }
@@ -251,7 +244,8 @@ function _add_form(self,node){
       formKey : "embedded:app:forms/"+_get_process_archive(self)+"/"+_.camelCase(node.getAttribute("name"))+".html",
       path : "src/main/webapp/forms/"+_get_process_archive(self)+"/"+_.camelCase(node.getAttribute("name"))+".html",
       node : node,
-      inputs : inputs
+      inputs : inputs,
+      infos: infos
     });
   }else{
     var arr = formKey.split(":app:");
@@ -260,7 +254,8 @@ function _add_form(self,node){
         formKey : formKey,
         path : "src/main/webapp/"+arr[1],
         node : node,
-        inputs : inputs
+        inputs : inputs,
+        infos: infos
       });
     }else{
       self.log(chalk.red("Error : formKey mal formed -> '"+formKey));
@@ -271,87 +266,120 @@ function _add_form(self,node){
 /**
  * This method create the forms and atach them to the bpmn
  */
-function _createForms(self){
-  var formsChoices = [];
-  var formsChoicesHashs = {};
-  for (var i =0;i<self.forms.length;i++){
-    var form = self.forms[i];
-    formsChoicesHashs[form.formKey] = form;
-    formsChoices.push({
-      name: form.formKey,
-      value : form.formKey,
-      checked: false
-    });
-  }
-  if(formsChoices.length>0){
-    var done = self.async();
-    self.prompt([
-    {
-      type : 'checkbox',
-      name : 'forms',
-      message : 'Which of these forms do you want to create?:',
-      choices : formsChoices
-    }]).then(function(answers){
-      for(var i=0; i<answers['forms'].length ; i++){
-        var form = formsChoicesHashs[answers['forms'][i]];
-        form.node.setAttribute("camunda:formKey",form.formKey);
-        for(var j=0;j<form.inputs.length;j++){
-          var input = form.inputs[j];
-          if(input.type == 'users'){
-            var extensionElements = form.node.getElementsByTagName("bpmn:extensionElements");
-            var extensionElement = null;
-            if(extensionElements.length==0){
-              extensionElement = new DOMParser().parseFromString("<bpmn:extensionElements></bpmn:extensionElements>");
-              form.node.appendChild(extensionElement);
-            }else{
-              extensionElement = extensionElements[0];
-            }
-            var package_user = "org.camunda.groups";
-            var class_name = _.upperFirst(input.list);
-            var group = input.list;
-            var executionListener = self.doc.createElement("camunda:executionListener");
-            executionListener.setAttribute("class",package_user+'.'+class_name);
-            executionListener.setAttribute("event","start");
+function _createForms(self,ask){
+  if(ask){
 
-            var executionListeners = extensionElement.getElementsByTagName("camunda:executionListener");
-            var found = false;
-            for(var k=0;k<executionListeners.length;k++){
-              if(executionListeners[k].getAttribute("class")==(package_user+'.'+class_name)){
-                found = true;
-              }
-            }
-            if(!found){
-              extensionElement.appendChild(executionListener);
-            }
-            /**
-            <camunda:executionListener class="org.camunda.groups.Developers" event="start" xmlns:camunda=""/>
-            <camunda:executionListener class="org.camunda.groups.Qas" event="start"/>
-              */
-            self.fs.copyTpl(
-              self.templatePath('users.java'),
-              self.destinationPath("src/main/java/org/camunda/groups/"+class_name+".java"),
-              {
-                package_user: package_user,
-                class_name: class_name,
-                group: group,
-                variable_name : input.list
-              }
-            );
-
-          }
+    var formsChoices = [];
+    var formsChoicesHashs = {};
+    //lleno los forms para seleccionarlos
+    for (var i =0;i<self.forms.length;i++){
+      var form = self.forms[i];
+      formsChoicesHashs[form.formKey] = form;
+      formsChoices.push({
+        name: form.formKey,
+        value : form.formKey,
+        checked: false
+      });
+    }
+    if(formsChoices.length>0){
+      var done = self.async();
+      self.prompt([
+      {
+        type : 'checkbox',
+        name : 'forms',
+        message : 'Which of these forms do you want to create?:',
+        choices : formsChoices
+      }]).then(function(answers){
+        var forms = [];
+        for(var i=0; i<answers['forms'].length ; i++){
+          forms.push(formsChoicesHashs[answers['forms'][i]]);
         }
-        self.fs.copyTpl(
-          self.templatePath('form.html'),
-          self.destinationPath(form.path),
-          {
-            inputs: form.inputs,
-          }
-        );
-      }
-      done();
-    });
+        _create_forms_script(self,forms)
+        done();
+      });
+    }
+  }else{
+    _create_forms_script(self,self.forms)
   }
 }
+/**
+ * Method tha creates the form scripts
+ * @param {Generator} self
+ * @param {Array} forms
+ */
+function _create_forms_script(self,forms){
+  for(var i=0;i<forms.length;i++){
+    var form = forms[i];
+    form.node.setAttribute("camunda:formKey",form.formKey);
+    for(var j=0;j<form.inputs.length;j++){
+      var input = form.inputs[j];
+      if(input.type == 'list'){
+        var extensionElements = form.node.getElementsByTagName("bpmn:extensionElements");
+        var extensionElement = null;
+        if(extensionElements.length==0){
+          extensionElement = new DOMParser().parseFromString("<bpmn:extensionElements></bpmn:extensionElements>");
+          form.node.appendChild(extensionElement);
+        }else{
+          extensionElement = extensionElements[0];
+        }
+        var package_user = "org.camunda.list";
+        var class_name = _.upperFirst(input.list);
+        var group = input.list;
+        var executionListener = self.doc.createElement("camunda:executionListener");
+        executionListener.setAttribute("class",package_user+'.'+class_name);
+        executionListener.setAttribute("event","start");
+
+        var executionListeners = extensionElement.getElementsByTagName("camunda:executionListener");
+        var found = false;
+        for(var k=0;k<executionListeners.length;k++){
+          if(executionListeners[k].getAttribute("class")==(package_user+'.'+class_name)){
+            found = true;
+          }
+        }
+        if(!found){
+          extensionElement.appendChild(executionListener);
+        }
+        /**
+        <camunda:executionListener class="org.camunda.list.Developers" event="start" xmlns:camunda=""/>
+        <camunda:executionListener class="org.camunda.list.Qas" event="start"/>
+          */
+        self.fs.copyTpl(
+          self.templatePath('list.java'),
+          self.destinationPath("src/main/java/org/camunda/list/"+class_name+".java"),
+          {
+            package_user: package_user,
+            class_name: class_name,
+            url : input.url,
+            group: group,
+            variable_name : input.list
+          }
+        );
+
+      }
+    }
+    var varsToLoad = [];
+    for (var k=0;k<form.inputs.length;k++){
+      if(form.inputs[i].type == "list"){
+        varsToLoad.push(form.inputs[k].name);
+      }
+    }
+    for (var k=0;k<form.infos.length;k++){
+      varsToLoad.push(form.infos[k].name);
+    }
+    self.fs.copyTpl(
+      self.templatePath('form.html'),
+      self.destinationPath(form.path),
+      {
+        inputs: form.inputs,
+        infos : form.infos,
+        varsToLoad : varsToLoad
+      }
+    );
+  }
+}
+
+
+
 /**
  * Methot that generate java delegators from an array
  * @param {Generator} self

@@ -389,7 +389,7 @@ module.exports = class extends Generator {
 
   }
   createForms(){
-    utils.createForms(this);
+    utils.createForms(this,true);
   }
 
   /**

@@ -1,14 +1,12 @@
 <form name="reunionComite" class='form-horizontal'>
   <script cam-script type="text/form-script">
     camForm.on('form-loaded', function()
-    {<% for(var i=0; i<inputs.length ; i++){
-          if(inputs[i].type == "list"  || inputs[i].type == "users"){%>
-      camForm.variableManager.fetchVariable('<%=inputs[i].list%>');<%}}%>
+    {<% for(var i=0; i<varsToLoad.length ; i++){%>
+      camForm.variableManager.fetchVariable('<%=varsToLoad[i]%>');<%}%>
     });
     camForm.on('variables-restored', function()
-    {<% for(var i=0; i<inputs.length ; i++){
-           if(inputs[i].type == "list" || inputs[i].type == "users"){%>
-      $scope.<%=inputs[i].list%> = camForm.variableManager.variableValue('<%=inputs[i].list%>');<%}}%>
+    {<% for(var i=0; i<varsToLoad.length ; i++){%>
+      $scope.<%=varsToLoad[i]%> = camForm.variableManager.variableValue('<%=varsToLoad[i]%>');<%}%>
     });
     <%
     var j = 0;
@@ -55,6 +53,10 @@
 		<%}
     }%>});
   </script>
+  <% for(var i=0; i< infos.length ; i++){
+    %><div class="form-group">
+      <h4>{{<%=infos[i]['name']%>}}</h4>
+    </div><%}%>
   <% for(var i=0,j=0; i< inputs.length ; i++){ %>
     <div class="form-group">
       <label class='col-lg-4 col-md-6 control-label'><%=inputs[i].label%></label>

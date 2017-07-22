@@ -17,9 +17,6 @@ var gulpFilter = require('gulp-filter');
 var htmlc = require('gulp-html');
 var path = require('path');
 module.exports = class extends Generator {
-
-
-
   /**
    * Constructor for the generator
    * @param {object} args
