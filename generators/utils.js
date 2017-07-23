@@ -139,7 +139,7 @@ function _add_form(self,node){
             required: required
           });
         }
-        //Input users
+        //Input users (deprecado)
         else if( name.startsWith("users")){
           var required = false;
           if(name.endsWith("*")){
@@ -174,30 +174,16 @@ function _add_form(self,node){
           });
         }
         //Input file
-        else if( name.startsWith("file")){
-          var required = false;
-          if(name.endsWith("*")){
-            required = true;
-          }
-          name = _.replace(name,"*","");
-          var arr = name.split(":");
-          if(arr.length==2){
-            inputs.push({
-              type :"file",
-              label: _.upperFirst(value),
-              extensions :arr[1],
-              name : value,
-              required: required
-            });
-          }else{
-            inputs.push({
-              type :"file",
-              extensions :"*",
-              label: _.upperFirst(value),
-              name : value,
-              required: required
-            });
-          }
+        else if( name.match("^file([\*]?):?")){
+          var rs = name.match("^file([\*]?):?");
+          var required = (rs[1]=="*")?true:false;
+          inputs.push({
+            type :"file",
+            label: _.upperFirst(value),
+            extensions :name.split(rs[0])[1],
+            name : value,
+            required: required
+          });
         }
         //Input boolean
         else if( name.startsWith("boolean")){
