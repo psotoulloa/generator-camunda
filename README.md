@@ -41,7 +41,4 @@ yo camunda:javadelegate Task_7a43dtk
 - IMplements inputs number
 - Bug javadelegate
 ### Autor
-
-<a href="http://www.nekst.me/" target="_blank" title="psotoulloa">
-  <img src="https://github.com/psotoulloa.png?size=64" width="64" height="64" alt="psotoulloa">
-</a>
+<img src="https://github.com/psotoulloa.png?size=64" width="64" height="64" alt="psotoulloa">
