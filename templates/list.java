@@ -14,23 +14,14 @@ import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
 import org.camunda.bpm.engine.variable.Variables;
 
+import org.camunda.auth.MiddlewareAuth;
+
 public class <%=class_name%> implements JavaDelegate {
 
 	public void execute(DelegateExecution execution) throws Exception {
-    Map<String, String> env = System.getenv();
-		JSONObject body = new JSONObject();
-		body.put("appname", env.get("camunda_appname"));
-		body.put("password", env.get("camunda_password"));
-		String url = env.get("middleware_url");
-		HttpResponse<JsonNode> response = Unirest.post(url+"/api2/apps/auth/token").
-				header("Content-Type",  "application/json").
-				body(body).
-				asJson();
-		JSONObject data = (JSONObject)response.getBody().getObject();
-
-		HttpResponse<JsonNode> response1 = Unirest.get(url+"<%=url%>").
+		HttpResponse<JsonNode> response1 = Unirest.get(System.getenv().get("middleware_url")+"<%=url%>").
 				header("accept",  "application/json").
-				header("token",(String)data.get("token")).
+				header("token",MiddlewareAuth.getToken()).
 				asJson();
 		Map<String,String> map = new HashMap<String,String>();
 

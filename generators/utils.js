@@ -161,9 +161,9 @@ function _add_form(self,node){
           }
         }
         //Input list
-        else if( name.match("^list([\*]?):([a-zA-Z\_0-9]+)\@((\/[\{]?([a-zA-Z0-9]+)[\}?]?)+)") != null){
+        else if( name.match("^list([\*]?):([a-zA-Z\_0-9]+)\@((\/[\{]?([a-zA-Z0-9\_]+)[\}?]?)+)") != null){
           //not the optimal way i know :)
-          var rs = name.match("^list([\*]?):([a-zA-Z\_0-9]+)\@((\/[\{]?([a-zA-Z0-9]+)[\}?]?)+)");
+          var rs = name.match("^list([\*]?):([a-zA-Z\_0-9]+)\@((\/[\{]?([a-zA-Z0-9\_]+)[\}?]?)+)");
           inputs.push({
             type :"list",
             label: _.upperFirst(value),

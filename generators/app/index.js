@@ -492,10 +492,22 @@ module.exports = class extends Generator {
           content: xml_bpmn
         }
       );
-
+      //Package json
       self.fs.copyTpl(
         self.templatePath('package.json'),
         self.destinationPath('package.json'),
+        {
+          localPath: self.destinationPath(),
+          groupId : self.config.get('groupId'),
+          artifactId : self.config.get('artifactId'),
+          applicationName: self.config.get('applicationName')
+        }
+      );
+
+      //Middleware Auth
+      self.fs.copyTpl(
+        self.templatePath('MiddlewareAuth.java'),
+        self.destinationPath("src/main/java/org/camunda/auth/"+'MiddlewareAuth.java'),
         {
           localPath: self.destinationPath(),
           groupId : self.config.get('groupId'),

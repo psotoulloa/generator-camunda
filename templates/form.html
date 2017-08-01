@@ -65,10 +65,13 @@
       }
     });
   </script>
-  <% for(var i=0; i< infos.length ; i++){
-    %><div class="form-group">
-      <h4>{{<%=infos[i]['name']%>}}</h4>
-    </div><%}%>
+  <div class="alert  alert-info">
+    <dl class="dl-horizontal">
+      <% for(var i=0; i< infos.length ; i++){
+      %><dt><%=infos[i]['name']%></dt><dd>{{<%=infos[i]['name']%>}}</dd>
+      <%}%>
+    </dl>
+  </div>
   <% for(var i=0,j=0; i< inputs.length ; i++){ %>
     <div class="form-group">
       <label class='col-lg-4 col-md-6 control-label'><%=inputs[i].label%></label>
