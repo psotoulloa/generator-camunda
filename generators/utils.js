@@ -173,6 +173,16 @@ function _add_form(self,node){
             required: (rs[1]=='*')?true:false
           });
         }
+        else if (name.match("^list([\*]?):([a-zA-Z\_0-9]+)")){
+          var rs = name.match("^list([\*]?):([a-zA-Z\_0-9]+)");
+          inputs.push({
+            type :"simple_list",
+            label: _.upperFirst(value),
+            list :rs[2],
+            name : value,
+            required: (rs[1]=='*')?true:false
+          });
+        }
         //Input file
         else if( name.match("^file([\*]?):?")){
           var rs = name.match("^file([\*]?):?");
@@ -341,12 +351,9 @@ function _create_forms_script(self,forms){
         );
       }
     }
+
     var varsToLoad = [];
-    for (var k=0;k<form.inputs.length;k++){
-      if(form.inputs[k].type == "list"){
-        varsToLoad.push(form.inputs[k].list);
-      }
-    }
+
     for (var k=0;k<form.infos.length;k++){
       varsToLoad.push(form.infos[k].name);
     }

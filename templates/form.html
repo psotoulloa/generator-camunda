@@ -132,12 +132,11 @@
           cam-max-filesize="10000000" />
         <% if (inputs[i].required ){%><div id="help-block<%=inputs[i].name%>">Doc required</div><%}%>
         <%}
-        else if(inputs[i].type == "list"){%>
+        else if(inputs[i].type == "list" || inputs[i].type == "simple_list" ){%>
         <select class="form-control"
             cam-variable-name="<%=inputs[i].name%>" <% if (inputs[i].required ){%>
             ng-required='true' <% } %>
-            cam-variable-type="String" >
-          <option ng-repeat="(key,val) in <%=inputs[i].list%>" value="{{key}}">{{val}}</option>
+            cam-variable-type="String" cam-choices="<%=inputs[i].list%>" >
         </select>
         <%}
         else if(inputs[i].type == "users"){%>
