@@ -8,7 +8,7 @@
     "prebuild" : "mvn clean",
     "build": "mvn package && mvn install",
     "predeploy" : "npm run build",
-    "deploy" : "cp <%=localPath%>/target/<%=artifactId%>-0.0.1-SNAPSHOT.war /Users/psoto/Development/camunda/camunda-bpm-tomcat-7.7.0/server/apache-tomcat-8.0.24/webapps"
+    "deploy" : "cp <%=localPath%>/target/<%=artifactId%>-0.0.1-SNAPSHOT.war ../webapps"
 
   },
   "keywords": [
