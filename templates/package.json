@@ -6,9 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "prebuild" : "mvn clean",
-    "build": "mvn package && mvn install",
+    "build": "mvn package",
     "predeploy" : "npm run build",
-    "deploy" : "cp <%=localPath%>/target/<%=artifactId%>-0.0.1-SNAPSHOT.war ../webapps"
+    "deploy" : "cp <%=localPath%>/target/<%=artifactId%>-0.0.1-SNAPSHOT.war ../../webapps"
 
   },
   "keywords": [
