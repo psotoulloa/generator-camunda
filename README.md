@@ -51,7 +51,7 @@ yo camunda:javadelegate Task_7a43dtk
 npm run deploy 
 
 ```
-Compile the project and place it in the folder ../../weapps, you can change this location to where you think appropriate 
+Compile the project and place it in the folder ../../weapps, you can change this location to where you think appropriate , file package.json :) 
 ## TODO LIST 
 - User guide
 - API Calls 
