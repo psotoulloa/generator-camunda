@@ -37,7 +37,7 @@ number | {varName} | Generates a Integer field associated with the name of the
 
 It is possible to specify if a field is required by adding the * character following the specified field type, for example list *: personlist @ / url / middleware
 
-#### How to generate Java Delegates
+#### Java Delegates
 
 ```bash
 # yo camunda:javadelegate <service_task_id/intermediate_throw_event_id>
@@ -46,7 +46,8 @@ yo camunda:javadelegate Task_7a43dtk
 
 ``` 
 
-
+### Additional commands
+* npm run deploy , compile the project and place it in the folder ../../weapps, you can change this location to where you think appropriate 
 
 ## TODO LIST 
 - User guide
