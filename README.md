@@ -53,7 +53,6 @@ yo camunda:javadelegate Task_7a43dtk
 - API Calls 
 - Refactor the code 
 - Make tests
-- IMplements inputs number
 - Bug javadelegate
 ### Autor
 <img src="https://github.com/psotoulloa.png?size=64" width="64" height="64" alt="psotoulloa">
