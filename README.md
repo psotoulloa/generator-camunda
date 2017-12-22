@@ -47,8 +47,11 @@ yo camunda:javadelegate Task_7a43dtk
 ``` 
 
 ### Additional commands
-* npm run deploy , compile the project and place it in the folder ../../weapps, you can change this location to where you think appropriate 
+```bash
+npm run deploy 
 
+```
+Compile the project and place it in the folder ../../weapps, you can change this location to where you think appropriate 
 ## TODO LIST 
 - User guide
 - API Calls 
