@@ -23,7 +23,21 @@ Then Yeoman will ask you for your bpmn file, then it will move to the "camunda p
 yo camunda:form Task_1i12yip
 
 ``` 
-#### Java Delegates
+The forms can be generated automatically using the elements called extensions in camunda, the format for these is as follows:
+
+Name | Value | Description
+------------ | ------------- | -------------
+info | {varName} | Load a variable, important, it should only be used if it has not been added as input, if this behavior is necessary, the generated line that loads the variable should be deleted, otherwise camunda will throw error
+boolean| {varName} | Generates a checkbox associated with the specified variable
+text | {varName} | Generates a text associated with the specified variable
+textarea | {varName} | Generates a textarea associated with the specified variable
+list:{listNameVariable}@{url} | {varName} | It generates a selector, whose list is loaded from the specified url, the loading process occurs in the start event, then the generator will create a java class in the org.camunda.list package
+date | {varName} | Generates a date field associated with the name of the variable
+number | {varName} | Generates a Integer field associated with the name of the variable
+
+It is possible to specify if a field is required by adding the * character following the specified field type, for example list *: personlist @ / url / middleware
+
+#### How to generate Java Delegates
 
 ```bash
 # yo camunda:javadelegate <service_task_id/intermediate_throw_event_id>
@@ -32,8 +46,9 @@ yo camunda:javadelegate Task_7a43dtk
 
 ``` 
 
+
+
 ## TODO LIST 
-- File input
 - User guide
 - API Calls 
 - Refactor the code 
