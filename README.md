@@ -34,6 +34,7 @@ textarea | {varName} | Generates a textarea associated with the specified varia
 list:{listNameVariable}@{url} | {varName} | It generates a selector, whose list is loaded from the specified url, the loading process occurs in the start event, then the generator will create a java class in the org.camunda.list package
 date | {varName} | Generates a date field associated with the name of the variable
 number | {varName} | Generates a Integer field associated with the name of the variable
+file | {varName} | Generates a File field associated with the name of the variable
 
 It is possible to specify if a field is required by adding the * character following the specified field type, for example list *: personlist @ / url / middleware
 
