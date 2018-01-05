@@ -1,69 +1,94 @@
 <form name="reunionComite" class='form-horizontal'>
   <script cam-script type="text/form-script">
-    camForm.on('form-loaded', function()
-    {<% for(var i=0; i<varsToLoad.length ; i++){%>
-      camForm.variableManager.fetchVariable('<%=varsToLoad[i]%>');<%}%>
-    });
-    camForm.on('variables-restored', function()
-    {<% for(var i=0; i<varsToLoad.length ; i++){%>
-      $scope.<%=varsToLoad[i]%> = camForm.variableManager.variableValue('<%=varsToLoad[i]%>');<%}%>
-    });
-    <%
-    var j = 0;
-    for(var i=0; i<inputs.length ; i++){
-         if(inputs[i].type == "date"){
-           j++;
-          %>
-    var dateFieldOpened<%=j%> = false;
-    $scope.open<%=j%> = function($event) {
-			$event.preventDefault();
-			$event.stopPropagation();
-			$scope.dateFieldOpened<%=j%> = true;
-		};<%}
-    }%>
+    inject([ '$scope', '$http','$modal', function($scope, $http,$modal) {
+      camForm.on('variables-applied', function() {<%
+        for(var i=0; i<inputs.length ; i++){
+          if(inputs[i].type == "file" && !inputs[i].required){%>
+        $scope.<%=inputs[i].name%> = camForm.variableManager.variableValue('<%=inputs[i].name%>');
+        <%}
+        }%>
+      });
 
-    <%
-    for(var i=0; i<inputs.length ; i++){
-         if(inputs[i].type == "file" && inputs[i].required){
-           j++;
-          %>
-    var fileUpload<%=inputs[i].name%> = $('#file<%=inputs[i].name%>');
-		var fileUploadHelpBlock<%=inputs[i].name%> = $('#help-block<%=inputs[i].name%>', fileUpload<%=inputs[i].name%>.parent());
-		function flagFileUpload<%=inputs[i].name%>() {
-			var hasFile = fileUpload<%=inputs[i].name%>.get(0).files.length > 0;
-			fileUpload<%=inputs[i].name%>[hasFile ? 'removeClass' : 'addClass']('ng-invalid');
-			fileUploadHelpBlock<%=inputs[i].name%>[hasFile ? 'removeClass' : 'addClass']('error');
-			return hasFile;
-		}
-		fileUpload<%=inputs[i].name%>.on('change', function () {
-			flagFileUpload<%=inputs[i].name%>();
-		});
-		<%}
-    }%>
-    camForm.on('submit', function(evt) {<%
-    for(var i=0; i<inputs.length ; i++){
-         if(inputs[i].type == "file" && inputs[i].required){
-          %>
-			if(!flagFileUpload<%=inputs[i].name%>()){
-			  // prevent submit if user has not provided a file
-        evt.submitPrevented = true;
-        return;
+      camForm.on('form-loaded', function()
+      {<% for(var i=0; i<varsToLoad.length ; i++){%>
+        camForm.variableManager.fetchVariable('<%=varsToLoad[i]%>');<%}
+        for(var i=0; i<inputs.length ; i++){
+          if(inputs[i].type == "date" ){%>
+      %>
+      camForm.variableManager.createVariable({
+        name: '<%=inputs[i].name%>',
+        type: 'Date',
+        value: null	});
+        <%}
+      }%>
+      });
+      camForm.on('variables-restored', function()
+      {<% for(var i=0; i<varsToLoad.length ; i++){%>
+        $scope.<%=varsToLoad[i]%> = camForm.variableManager.variableValue('<%=varsToLoad[i]%>');<%}%>
+      });
+      <%
+      var j = 0;
+      for(var i=0; i<inputs.length ; i++){
+          if(inputs[i].type == "date"){
+            j++;
+            %>
+      var dateFieldOpened<%=j%> = false;
+      $scope.open<%=j%> = function($event) {
+        $event.preventDefault();
+        $event.stopPropagation();
+        $scope.dateFieldOpened<%=j%> = true;
+      };<%}
+      }%>
+
+      <%
+      for(var i=0; i<inputs.length ; i++){
+          if(inputs[i].type == "file" && inputs[i].required){
+            j++;
+            %>
+      var fileUpload<%=inputs[i].name%> = $('#file<%=inputs[i].name%>');
+      var fileUploadHelpBlock<%=inputs[i].name%> = $('#help-block<%=inputs[i].name%>', fileUpload<%=inputs[i].name%>.parent());
+      function flagFileUpload<%=inputs[i].name%>() {
+        var hasFile = fileUpload<%=inputs[i].name%>.get(0).files.length > 0;
+        fileUpload<%=inputs[i].name%>[hasFile ? 'removeClass' : 'addClass']('ng-invalid');
+        fileUploadHelpBlock<%=inputs[i].name%>[hasFile ? 'removeClass' : 'addClass']('error');
+        return hasFile;
       }
-		<%}
-    }%>
-      for (var i = 0; i < camForm.fields.length; i++) {
-    <%
-    for(var i=0; i<inputs.length ; i++){
-         if(inputs[i].type == "file" && !inputs[i].required){
-          %>
-        if (camForm.fields[i].variableName == '<%=inputs[i].name%>') {
-          camForm.fields.splice(i, 1);
-          camForm.variableManager.destroyVariable('<%=inputs[i].name%>');
+      fileUpload<%=inputs[i].name%>.on('change', function () {
+        flagFileUpload<%=inputs[i].name%>();
+      });
+      <%}
+      }%>
+      camForm.on('submit', function(evt) {<%
+      for(var i=0; i<inputs.length ; i++){
+        if(inputs[i].type == "file" && inputs[i].required){
+            %>
+        if(!flagFileUpload<%=inputs[i].name%>()){
+          // prevent submit if user has not provided a file
+          evt.submitPrevented = true;
+          return;
         }
-		<%}
-    }%>
-      }
-    });
+      <%}
+        if(inputs[i].type == "date"){
+          %>
+        var <%=inputs[i].name%>_arr = document.getElementById("<%=inputs[i].name%>").value.split("-")
+        camForm.variableManager.variableValue('<%=inputs[i].name%>', new Date(<%=inputs[i].name%>_arr[2]+"-"+<%=inputs[i].name%>_arr[1]+"-"+<%=inputs[i].name%>_arr[0]+"T12:00:00"));
+      <%
+        }
+      }%>
+        for (var i = 0; i < camForm.fields.length; i++) {
+      <%
+      for(var i=0; i<inputs.length ; i++){
+          if(inputs[i].type == "file" && !inputs[i].required){
+            %>
+          if (camForm.fields[i].variableName == '<%=inputs[i].name%>') {
+            camForm.fields.splice(i, 1);
+            camForm.variableManager.destroyVariable('<%=inputs[i].name%>');
+          }
+      <%}
+      }%>
+        }
+      });
+    }]);
   </script>
   <div class="alert  alert-info">
     <dl class="dl-horizontal">
@@ -102,9 +127,9 @@
           %>
         <input class="form-control"
           type="text"
-          cam-variable-name="<%=inputs[i].name%>"
-          cam-variable-type="Date"
-          datepicker-popup="yyyy-MM-dd'T'HH:mm:ss" <% if (inputs[i].required ){%>
+          id="<%=inputs[i].name%>"
+          ng-model="<%=inputs[i].name%>"
+          datepicker-popup="dd-MM-yyyy" <% if (inputs[i].required ){%>
           ng-required='true' <% } %>
           is-open="dateFieldOpened<%=j%>" />
         <span class="input-group-btn">
