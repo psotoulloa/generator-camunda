@@ -99,8 +99,8 @@
   </div>
   <% for(var i=0,j=0; i< inputs.length ; i++){ %>
     <div class="form-group">
-      <label class='col-lg-4 col-md-6 control-label'><%=inputs[i].label%></label>
-      <div class='col-lg-8 col-md-6'><% if(inputs[i].type == "boolean"){%>
+      <label class='col-md-4 control-label'><%=inputs[i].label%></label>
+      <div class='col-md-8'><% if(inputs[i].type == "boolean"){%>
         <input class="form-control"
           type="checkbox"
           cam-variable-name="<%=inputs[i].name%>" <% if (inputs[i].required ){%>
@@ -125,20 +125,22 @@
         else if(inputs[i].type == "date"){
           j++;
           %>
-        <input class="form-control"
-          type="text"
-          id="<%=inputs[i].name%>"
-          ng-model="<%=inputs[i].name%>"
-          datepicker-popup="dd-MM-yyyy" <% if (inputs[i].required ){%>
-          ng-required='true' <% } %>
-          is-open="dateFieldOpened<%=j%>" />
-        <span class="input-group-btn">
-          <button type="button"
-          class="btn btn-default"
-          ng-click="open<%=j%>($event)">
-          <i class="glyphicon glyphicon-calendar"></i>
-          </button>
-        </span>
+        <div class='input-group'>
+          <input class="form-control"
+            type="text"
+            id="<%=inputs[i].name%>"
+            ng-model="<%=inputs[i].name%>"
+            datepicker-popup="dd-MM-yyyy" <% if (inputs[i].required ){%>
+            ng-required='true' <% } %>
+            is-open="dateFieldOpened<%=j%>" />
+          <span class="input-group-btn">
+            <button type="button"
+            class="btn btn-default"
+            ng-click="open<%=j%>($event)">
+            <i class="glyphicon glyphicon-calendar"></i>
+            </button>
+          </span>
+        </div>
         <%}
         else if(inputs[i].type == "number"){
           %>
